@@ -11,7 +11,7 @@ $(document).ready(function () {
         $('#cidade').val('');
         $('#estado').val('');
     }
-
+    
     // Função para gerenciar os campos de endereço
     function gerenciarCamposEndereco(habilitar) {
         $('#numero').prop('disabled', !habilitar);
@@ -37,18 +37,26 @@ $(document).ready(function () {
             $('#estado').val('...');
 
             // 3. FAZ A REQUISIÇÃO PARA A API VIACEP
-            $.getJSON(url, function (response) {
+            $.getJSON(url, function(response) {
+                if ("erro" in response) {
+                    alert('CEP não encontrado!');
+                    limparFormularioEndereco();
+                    gerenciarCamposEndereco(false);
+                } else {
+                    $('#endereco').val(response.logradouro);
+                    $('#bairro').val(response.bairro);
+                    $('#cidade').val(response.localidade);
+                    $('#estado').val(response.uf);
 
-                $('#endereco').val(response.logradouro);
-                $('#bairro').val(response.bairro);
-                $('#cidade').val(response.localidade);
-                $('#estado').val(response.uf);
-
-                gerenciarCamposEndereco(true);
-
-                $('#numero').focus();
-
-            })
+                    gerenciarCamposEndereco(true);
+                    
+                    $('#numero').focus();
+                }
+            }).fail(function() {
+                alert('Ocorreu um erro ao buscar o CEP. Tente novamente.');
+                limparFormularioEndereco();
+                gerenciarCamposEndereco(false);
+            });
 
         } else {
             gerenciarCamposEndereco(false);
