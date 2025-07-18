@@ -11,7 +11,7 @@ $(document).ready(function () {
         $('#cidade').val('');
         $('#estado').val('');
     }
-    
+
     // Função para gerenciar os campos de endereço
     function gerenciarCamposEndereco(habilitar) {
         $('#numero').prop('disabled', !habilitar);
@@ -21,7 +21,6 @@ $(document).ready(function () {
             limparFormularioEndereco();
         }
     }
-
 
     // 2. CONFIGURA O EVENTO onBlur PARA O CAMPO CEP
     $('#cep').on('blur', function () {
@@ -37,7 +36,7 @@ $(document).ready(function () {
             $('#estado').val('...');
 
             // 3. FAZ A REQUISIÇÃO PARA A API VIACEP
-            $.getJSON(url, function(response) {
+            $.getJSON(url, function (response) {
                 if ("erro" in response) {
                     alert('CEP não encontrado!');
                     limparFormularioEndereco();
@@ -49,10 +48,10 @@ $(document).ready(function () {
                     $('#estado').val(response.uf);
 
                     gerenciarCamposEndereco(true);
-                    
+
                     $('#numero').focus();
                 }
-            }).fail(function() {
+            }).fail(function () {
                 alert('Ocorreu um erro ao buscar o CEP. Tente novamente.');
                 limparFormularioEndereco();
                 gerenciarCamposEndereco(false);
@@ -62,4 +61,34 @@ $(document).ready(function () {
             gerenciarCamposEndereco(false);
         }
     });
+
+    // 4. SALVA O CONTEÚDO DA REQUISIÇÃO
+    $('#form-cliente').on('submit', function (event) {
+        event.preventDefault();
+
+        // VALIDAÇÃO
+        const nome = $('#nome').val().trim();
+        const sobrenome = $('#sobrenome').val().trim();
+        const numero = $('#numero').val().trim();
+
+        if (!nome || !sobrenome || !numero) {
+            alert('Por favor, preencha os campos Nome, Sobrenome e Número.');
+            return; 
+        }
+
+        // Objeto costruído
+        const cliente = {
+            nome: nome,
+            sobrenome: sobrenome,
+            cep: $('#cep').val(),
+            endereco: $('#endereco').val(),
+            numero: numero,
+            bairro: $('#bairro').val(),
+            cidade: $('#cidade').val(),
+            estado: $('#estado').val(),
+        };
+
+        console.log('Cliente capturado:', cliente);
+    });
 });
+
