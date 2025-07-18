@@ -1,5 +1,6 @@
 // Garante que o código só será executado após o carregamento completo do DOM
 $(document).ready(function () {
+    let clienteId = 1;
 
     // 1. APLICA A MÁSCARA AO CAMPO CEP
     $('#cep').mask('00000-000');
@@ -22,14 +23,20 @@ $(document).ready(function () {
         }
     }
 
-    // 2. CONFIGURA O EVENTO onBlur PARA O CAMPO CEP
+    // Função para limpar todos os campos
+    function resetarFormularioCompleto() {
+        $('#form-cliente')[0].reset();
+        gerenciarCamposEndereco(false);
+        $('#nome').focus();
+    }
+
+     // 2. CONFIGURA O EVENTO onBlur PARA O CAMPO CEP
     $('#cep').on('blur', function () {
         const cep = $(this).val().replace('-', '');
 
         // Validação e montagem de requisição
         if (cep.length === 8) {
             const url = `https://viacep.com.br/ws/${cep}/json/`;
-
             $('#endereco').val('Buscando...');
             $('#bairro').val('...');
             $('#cidade').val('...');
@@ -46,9 +53,7 @@ $(document).ready(function () {
                     $('#bairro').val(response.bairro);
                     $('#cidade').val(response.localidade);
                     $('#estado').val(response.uf);
-
                     gerenciarCamposEndereco(true);
-
                     $('#numero').focus();
                 }
             }).fail(function () {
@@ -56,30 +61,29 @@ $(document).ready(function () {
                 limparFormularioEndereco();
                 gerenciarCamposEndereco(false);
             });
-
         } else {
             gerenciarCamposEndereco(false);
         }
     });
 
-    // 4. SALVA O CONTEÚDO DA REQUISIÇÃO
+  // 4. SALVA O CONTEÚDO DA REQUISIÇÃO
     $('#form-cliente').on('submit', function (event) {
         event.preventDefault();
 
-        // VALIDAÇÃO
         const nome = $('#nome').val().trim();
         const sobrenome = $('#sobrenome').val().trim();
         const numero = $('#numero').val().trim();
 
+         // Validação
         if (!nome || !sobrenome || !numero) {
             alert('Por favor, preencha os campos Nome, Sobrenome e Número.');
-            return; 
+            return;
         }
 
         // Objeto costruído
         const cliente = {
-            nome: nome,
-            sobrenome: sobrenome,
+            id: clienteId,
+            nomeCompleto: `${nome} ${sobrenome}`,
             cep: $('#cep').val(),
             endereco: $('#endereco').val(),
             numero: numero,
@@ -88,7 +92,23 @@ $(document).ready(function () {
             estado: $('#estado').val(),
         };
 
-        console.log('Cliente capturado:', cliente);
+        /*DEBUG*/ //console.log('Cliente capturado:', cliente);
+
+        // 5. ADICIONAR CLIENTE À TABELA
+        const novaLinha = `
+            <tr>
+                <th scope="row">${cliente.id}</th>
+                <td>${cliente.nomeCompleto}</td>
+                <td>${cliente.endereco}, ${cliente.numero}</td>
+                <td>${cliente.cep}</td>
+                <td>${cliente.bairro}</td>
+                <td>${cliente.cidade}</td>
+                <td>${cliente.estado}</td>
+            </tr>
+        `;
+        $('#tabela-clientes').append(novaLinha);
+
+        clienteId++;
+        resetarFormularioCompleto();
     });
 });
-
