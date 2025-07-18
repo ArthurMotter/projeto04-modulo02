@@ -1,13 +1,57 @@
 // Garante que o código só será executado após o carregamento completo do DOM
 $(document).ready(function () {
 
-    // Aplica a máscara ao campo de CEP
-    $('#cep').mask('00000-000', {
-        // A função onComplete é chamada quando o usuário termina de digitar o CEP
-        onComplete: function (cep) {
-            console.log('CEP completo:', cep);
-            // O próximo passo (Issue #3) será fazer a chamada da API aqui.
+    // 1. APLICA A MÁSCARA AO CAMPO CEP
+    $('#cep').mask('00000-000');
+
+    // Função para limpar o formulário de endereço
+    function limparFormularioEndereco() {
+        $('#endereco').val('');
+        $('#bairro').val('');
+        $('#cidade').val('');
+        $('#estado').val('');
+    }
+
+    // Função para gerenciar os campos de endereço
+    function gerenciarCamposEndereco(habilitar) {
+        $('#numero').prop('disabled', !habilitar);
+        $('#btn-salvar').prop('disabled', !habilitar);
+
+        if (!habilitar) {
+            limparFormularioEndereco();
+        }
+    }
+
+
+    // 2. CONFIGURA O EVENTO onBlur PARA O CAMPO CEP
+    $('#cep').on('blur', function () {
+        const cep = $(this).val().replace('-', '');
+
+        // Validação e montagem de requisição
+        if (cep.length === 8) {
+            const url = `https://viacep.com.br/ws/${cep}/json/`;
+
+            $('#endereco').val('Buscando...');
+            $('#bairro').val('...');
+            $('#cidade').val('...');
+            $('#estado').val('...');
+
+            // 3. FAZ A REQUISIÇÃO PARA A API VIACEP
+            $.getJSON(url, function (response) {
+
+                $('#endereco').val(response.logradouro);
+                $('#bairro').val(response.bairro);
+                $('#cidade').val(response.localidade);
+                $('#estado').val(response.uf);
+
+                gerenciarCamposEndereco(true);
+
+                $('#numero').focus();
+
+            })
+
+        } else {
+            gerenciarCamposEndereco(false);
         }
     });
-
 });
